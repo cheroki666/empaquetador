@@ -86,20 +86,20 @@ class frame_principal(wx.Frame):
         self.tbcodImplantacion.Bind(wx.EVT_TEXT, self.OnCambiaImplantacion)
 
         # Configuramos los sizers:
-        hsizerInicio.Add(self.etfechainicio, 1, wx.TOP|wx.BOTTOM|wx.RIGHT|wx.CENTER, 5)
-        hsizerInicio.Add(self.tbFechaInicio, 1, wx.TOP|wx.BOTTOM|wx.RIGHT|wx.CENTER, 5)
+        hsizerInicio.Add(self.etfechainicio, 0, wx.TOP|wx.BOTTOM|wx.RIGHT|wx.CENTER, 5)
+        hsizerInicio.Add(self.tbFechaInicio, 0, wx.TOP|wx.BOTTOM|wx.RIGHT|wx.CENTER, 5)
         hsizerInicio.Fit(self)
 
-        hsizerImpl.Add(self.etcodImplantacion, 1, wx.TOP|wx.BOTTOM|wx.RIGHT|wx.CENTER, 5)
-        hsizerImpl.Add(self.tbcodImplantacion, 1, wx.TOP|wx.BOTTOM|wx.RIGHT|wx.CENTER, 5)
+        hsizerImpl.Add(self.etcodImplantacion, 0, wx.TOP|wx.BOTTOM|wx.RIGHT|wx.CENTER, 5)
+        hsizerImpl.Add(self.tbcodImplantacion, 0, wx.TOP|wx.BOTTOM|wx.RIGHT|wx.CENTER, 5)
         hsizerImpl.Fit(self)
 
-        hsizer.Add(hsizerInicio, 1, wx.ALL|wx.EXPAND|wx.LEFT, 5)
-        hsizer.Add(hsizerImpl, 1, wx.ALL|wx.EXPAND|wx.RIGHT, 5)
+        hsizer.Add(hsizerInicio, 1, wx.LEFT, 5)
+        hsizer.Add(hsizerImpl, 0, wx.RIGHT, 5)
 
 
         # Añadimos al sizer la caja y el botón.
-        vsizer.Add(hsizer, 0, wx.ALL, 5)
+        vsizer.Add(hsizer, 0, wx.ALL|wx.EXPAND, 5)
         vsizer.Add(self.boton, 0, wx.ALL, 5)
         # vsizer.Add(self.caja_texto, 0, wx.ALL, 5)
 
