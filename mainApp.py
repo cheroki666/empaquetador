@@ -8,7 +8,7 @@ import appEmpaquetador_1 as funciones
 
 
 # Creamos una clase frame que pide un dato.
-class frame_secundario(wx.Frame):
+class frame_fechaInicio(wx.Frame):
     def __init__(self, parent):
         # Este es el constructor. Darse cuenta que se pasa como
         # parámetro parent, esto es, la referencia del frame que instancia
@@ -65,16 +65,38 @@ class frame_principal(wx.Frame):
 
         vsizer = wx.BoxSizer(wx.VERTICAL)
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        hsizerInicio = wx.BoxSizer(wx.HORIZONTAL)
+        hsizerImpl = wx.BoxSizer(wx.HORIZONTAL)
 
         # Creamos un botón.
         self.boton = wx.Button(self, -1, "Fecha Inicio")
+        self.boton.Enable(False)
         self.boton.Bind(wx.EVT_BUTTON, self.OnSelInicioBoton)
-        # Creamos una caja de texto de solo lectura.
+        # Creamos una caja de texto de solo lectura y una etiqueta
         self.etfechainicio = wx.StaticText(self, -1, style=wx.ALIGN_LEFT, label = 'Fecha Inicio')
-        self.tbFechaInicio = wx.TextCtrl(self, -1, style=wx.TE_READONLY)
+        self.etfechainicio.Enable(False)
+
+        self.tbFechaInicio = wx.TextCtrl(self, -1, style=wx.TE_READONLY )
         self.tbFechaInicio.Bind(wx.EVT_TEXT, self.OnCambioFechaInicio)
-        hsizer.Add(self.etfechainicio, 0, wx.CENTER, 5)
-        hsizer.Add(self.tbFechaInicio, 0, wx.ALL, 5)
+        self.tbFechaInicio.Enable(False)
+
+        # Creamos un TextCtrl para introducir la implantacion
+        self.etcodImplantacion = wx.StaticText(self, -1, style=wx.ALIGN_LEFT, label = 'Cod. Implantación')
+        self.tbcodImplantacion = wx.TextCtrl(self, -1, style=wx.ALIGN_RIGHT)
+        self.tbcodImplantacion.Bind(wx.EVT_TEXT, self.OnCambiaImplantacion)
+
+        # Configuramos los sizers:
+        hsizerInicio.Add(self.etfechainicio, 1, wx.TOP|wx.BOTTOM|wx.RIGHT|wx.CENTER, 5)
+        hsizerInicio.Add(self.tbFechaInicio, 1, wx.TOP|wx.BOTTOM|wx.RIGHT|wx.CENTER, 5)
+        hsizerInicio.Fit(self)
+
+        hsizerImpl.Add(self.etcodImplantacion, 1, wx.TOP|wx.BOTTOM|wx.RIGHT|wx.CENTER, 5)
+        hsizerImpl.Add(self.tbcodImplantacion, 1, wx.TOP|wx.BOTTOM|wx.RIGHT|wx.CENTER, 5)
+        hsizerImpl.Fit(self)
+
+        hsizer.Add(hsizerInicio, 1, wx.ALL|wx.EXPAND|wx.LEFT, 5)
+        hsizer.Add(hsizerImpl, 1, wx.ALL|wx.EXPAND|wx.RIGHT, 5)
+
 
         # Añadimos al sizer la caja y el botón.
         vsizer.Add(hsizer, 0, wx.ALL, 5)
@@ -103,10 +125,15 @@ class frame_principal(wx.Frame):
         # botón se lanzará el manejador de eventos correspondiente.
 
 
+    def OnCambiaImplantacion(self, event):
+        self.boton.Enable(True)
+        self.etfechainicio.Enable(True)
+        self.tbFechaInicio.Enable(True)
+
     # Manejador de eventos.
     def OnSelInicioBoton(self, event):
         # Si se hace click se crea una instancia del frame_secundario.
-        frame = frame_secundario(self)
+        frame = frame_fechaInicio(self)
         # Mostramos.
         self.actualizarLog('Seleccionamos la fecha de inicio...')
         frame.Show()
@@ -172,8 +199,10 @@ class frame_principal(wx.Frame):
                 self.actualizarLog(f'Fichero: [{datos[1]}] YA está en CVS. Tenemos que hacer un cvs commit ...')
                 listaCommit.append(fichero)
 
-        self.actualizarLog(f'Vamos a deseleccionar los ficheros no encontrados: \n{listaEliminar}')
-        self.deseleccionarFicheros(listaEliminar)
+        if len(listaEliminar) > 0:
+            self.actualizarLog(f'Vamos a deseleccionar los ficheros no encontrados: \n{listaEliminar}')
+            self.deseleccionarFicheros(listaEliminar)
+
         self.construirPaquete()
         return listaAdd
 
@@ -212,13 +241,14 @@ class frame_principal(wx.Frame):
         '''
         # ya tenemos los ficheros dentro de su estructura
         # vamos a hacer el paquete:
+        self.actualizarLog(f'Generamos el Parche ')
         comando = cmd.ejecutarScript('cairo_desaomega', ['cd instalaciones_prueba', 'tar -cvf Parche_OPV_GenAutomatica_20240303.tar ./OmegaCAIRO'])
         comando = cmd.ejecutarScript('cairo_desaomega',
                                       ['cd instalaciones_prueba', 'gzip Parche_OPV_GenAutomatica_20240303.tar'])
-    def dameClavePorValor(self, my_dict, val):
-        for key, value in my_dict.items():
-            if val == value:
-                return key
+    def dameClavePorValor(self, mi_dicc, valor_buscado):
+        for clave, valor in mi_dicc.items():
+            if valor_buscado == valor:
+                return clave
 
         return None
 

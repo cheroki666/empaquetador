@@ -104,7 +104,8 @@ def obtenerdatoscanal(ssh_client, canal, miComando):
         while txtsalida.find(patronFinal) == -1:
             time.sleep(0.01)
             salidaparcial = canal.recv(4096)
-            # print('Recepcion parcial: [%s]' % salidaparcial.decode('utf-8'))
+            if miComando.find('tar -cvf') != -1 or miComando.find('gzip') != -1:
+                print('Recepcion parcial: [%s]' % salidaparcial.decode('utf-8'))
             txtsalida += salidaparcial.decode('utf-8')
             # print('Recibo: [%s]' % txtsalida)
         time.sleep(0.01)
@@ -130,11 +131,13 @@ def ejecutarScript(maquina, script):
     ssh_client = conectar(maquina)
     canal = obtenerCanal(ssh_client)
     salida = ''
+    print('--- Inicio script --------------------')
     for comando in script:
         salida += obtenerdatoscanal(ssh_client, canal, comando)
 
     canal.close()
     desconectar(ssh_client)
+    print('--- Final script ---------------------')
     return salida
 
 
