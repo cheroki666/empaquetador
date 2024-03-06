@@ -8,7 +8,7 @@ import re
 import comandos as cmd
 
 
-def prueba(a, b):
+def datos_recibidos(a, b):
     print(f'Bytes transferidos: {a}/{b}')
 
 
@@ -17,14 +17,14 @@ def obtenerFichero(fichero, serverId):
 
     resultado = False
     # Definimos la ruta donde queremos poner el fichero
-    local_file_path = 'D:/T138708/' + fichero
-    # local_file_path = 'C:/Users/ajgar/' + fichero
+    # local_file_path = 'D:/T138708/' + fichero
+    local_file_path = 'C:/Users/ajgar/' + fichero
     # Definimos la ruta y fichero que queremos traer a local
     remote_file_path = '/users/cairo/instalaciones/' + fichero
     print(f'Vamos a descargar el fichero <{fichero}>')
     try:
         sftp = ssh_client.open_sftp()
-        sftp.get(remote_file_path, local_file_path, callback=prueba)
+        sftp.get(remote_file_path, local_file_path, callback=datos_recibidos)
         # aqui ya tenemos el fichero
         resultado = True
         sftp.close()
@@ -107,8 +107,8 @@ def obtenerListaFicheros(fechaInicio):
     serverId = 'cairo_desaomega'
     ficheroOrigen = 'listaSubidasProduccionRealizadas.csv'
     # fechaInicio = '04/12/2023'  # fecha en formato DD/MM/YYYY
-    rutaDestino = 'D:/T138708/'
-    # rutaDestino = 'C:/Users/ajgar/'
+    # rutaDestino = 'D:/T138708/'
+    rutaDestino = 'C:/Users/ajgar/'
 
     if (obtenerFichero(ficheroOrigen, serverId)):
         print('Descarga con Éxito!!!')
@@ -130,6 +130,10 @@ def crearEstructuraDirect(lista):
                 print(ruta)
     return listaDir
 
+
+def obtenerfechaActual():
+    today = datetime.date.today()
+    return today.strftime('%Y%m%d')
 
 if __name__ == '__main__':
     '''

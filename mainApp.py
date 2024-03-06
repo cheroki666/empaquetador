@@ -101,11 +101,10 @@ class frame_principal(wx.Frame):
         # Añadimos al sizer la caja y el botón.
         vsizer.Add(hsizer, 0, wx.ALL|wx.EXPAND, 5)
         vsizer.Add(self.boton, 0, wx.ALL, 5)
-        # vsizer.Add(self.caja_texto, 0, wx.ALL, 5)
 
         # Creamos un CheckListBox
         self.clbLista = wx.CheckListBox(self, -1)
-        vsizer.Add(self.clbLista, 4, wx.EXPAND | wx.LEFT | wx.RIGHT| wx.BOTTOM, 5 )
+        vsizer.Add(self.clbLista, 4, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 5 )
         vsizer.SetMinSize(800,400)
         vsizer.Fit(self)
 
@@ -152,10 +151,10 @@ class frame_principal(wx.Frame):
                 # estos los debemos marcar
                 listareducida.append(fichero)
         self.clbLista.SetCheckedStrings(tuple(listareducida))
-        self.actualizarLog("Obtenemos los ficheros que se van a consolidar...")
-        # Mostramos.
+        self.actualizarLog("Obtenemos los ficheros a consolidar...")
+        # Mostramos el contenido
         self.btValidar.Enable(True)
-        frame.Show()
+        # frame.Show()
 
     def OnClickComienzo(self, event):
         # Habrá que conectarse a la máquina y ejecutar comandos
@@ -241,10 +240,21 @@ class frame_principal(wx.Frame):
         '''
         # ya tenemos los ficheros dentro de su estructura
         # vamos a hacer el paquete:
-        self.actualizarLog(f'Generamos el Parche ')
-        comando = cmd.ejecutarScript('cairo_desaomega', ['cd instalaciones_prueba', 'tar -cvf Parche_OPV_GenAutomatica_20240303.tar ./OmegaCAIRO'])
+        # generaremos el nombre del parche con el formato:
+        # Parche_cairo_<cod_implantacion>_V<YYYYmmdd>.tar.gz
+        nombreParche = 'Parche_cairo_' + self.tbcodImplantacion.GetValue() + '_V' + funciones.obtenerfechaActual()
+        self.actualizarLog(f'Generamos el Parche <{nombreParche}>')
+
+
+        comando = cmd.ejecutarScript('cairo_desaomega', ['cd instalaciones_prueba', 'tar -cvf ' + nombreParche + '.tar ./OmegaCAIRO'])
         comando = cmd.ejecutarScript('cairo_desaomega',
-                                      ['cd instalaciones_prueba', 'gzip Parche_OPV_GenAutomatica_20240303.tar'])
+                                      ['cd instalaciones_prueba', 'gzip ' + nombreParche + '.tar'])
+
+
+
+
+
+
     def dameClavePorValor(self, mi_dicc, valor_buscado):
         for clave, valor in mi_dicc.items():
             if valor_buscado == valor:
