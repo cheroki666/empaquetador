@@ -7,6 +7,9 @@ import appEmpaquetador_1 as funciones
 
 
 
+from threading import Thread
+
+
 # Creamos una clase frame que pide un dato.
 class frame_fechaInicio(wx.Frame):
     def __init__(self, parent):
@@ -60,8 +63,10 @@ class frame_fechaInicio(wx.Frame):
 class frame_principal(wx.Frame):
     def __init__(self):
         # Constructor. Llamamos al constructor de la clase wx.Frame.
-        wx.Frame.__init__(self, None, -1, title='OPV_Empaquetador')
-        # Creamos un sizer horizontal.
+        frame = wx.Frame.__init__(self, None, -1, title='OPV_Empaquetador')
+        # Establecemos el tamaño min. y max. de la ventana
+        wx.Frame.SetSizeHints(self, (600,400),(1024,768))
+        # Creamos los sizers.
 
         vsizer = wx.BoxSizer(wx.VERTICAL)
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -69,7 +74,7 @@ class frame_principal(wx.Frame):
         hsizerImpl = wx.BoxSizer(wx.HORIZONTAL)
 
         # Creamos un botón.
-        self.boton = wx.Button(self, -1, "Fecha Inicio")
+        self.boton = wx.Button(self, -1, "Fecha Inicio...")
         self.boton.Enable(False)
         self.boton.Bind(wx.EVT_BUTTON, self.OnSelInicioBoton)
         # Creamos una caja de texto de solo lectura y una etiqueta
@@ -113,11 +118,28 @@ class frame_principal(wx.Frame):
         self.tclog.SetBackgroundColour(wx.Colour(253, 245, 226, 1))
         vsizer.Add(self.tclog, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 5)
         # Creamos un boton para Validar los ficheros.
-        self.btValidar = wx.Button(self, -1, "Validar")
+        self.btValidar = wx.Button(self, -1, 'Validar')
         self.btValidar.Bind(wx.EVT_BUTTON, self.OnClickComienzo)
         self.btValidar.Enable(False)
-        vsizer.Add(self.btValidar, 0, wx.ALL, 5)
+        hsizerValidar = wx.BoxSizer(wx.HORIZONTAL)
+        hsizerValidar.Add(self.btValidar, 0, wx.CENTER, 5)
+        # hsizerValidar.Fit(self)
 
+        # Creamos un boton para generar el log y resto de documentos...
+        self.btGuardar = wx.Button(self, -1, 'Guardar...')
+        self.btGuardar.Bind(wx.EVT_BUTTON, self.OnClickGuardar)
+        self.btGuardar.Enable(False)
+        hsizerGuardar = wx.BoxSizer(wx.HORIZONTAL)
+        hsizerGuardar.Add(self.btGuardar, 0, wx.CENTER, 5)
+        hsizerGuardar.Fit(self)
+
+        hsizerFinal = wx.BoxSizer(wx.HORIZONTAL)
+        hsizerFinal.Add(hsizerValidar, 1, wx.EXPAND, 0)
+        hsizerFinal.Add(hsizerGuardar, 0, wx.EXPAND, 0)
+        hsizerFinal.Fit(self)
+
+        # vsizer.Add(self.btValidar, 0, wx.ALL, 5)
+        vsizer.Add(hsizerFinal, 0, wx.ALL | wx.EXPAND, 5)
         # Asociamos el sizer al frame.
         self.SetSizer(vsizer)
         # Creamos el binding. Cuando se haga click en el
@@ -166,11 +188,24 @@ class frame_principal(wx.Frame):
             lFicheros.append(valores[1])
         # 1 - Comprobaremos el estado de los ficheros en CVS
         listaresultados = self.ejecutarCVSstatus(lFicheros)
+        if len(listaresultados) > 0:
 
+            self.construirPaquete()
+            # si hemos generado correctamente el paquete, habilitamos el boton Guardar
+            self.btGuardar.Enable(True)
+
+
+    def OnClickGuardar(self, event):
+       pass
 
 
     def actualizarLog(self, texto):
         # textoFinal = self.tclog.GetValue() + texto + '\n'
+        thread = Thread(target = self.actualiza, args = (texto, ))
+        thread.start()
+
+
+    def actualiza(self, texto):
         self.tclog.AppendText(texto + '\n')
         self.tclog.Refresh()
 
@@ -202,7 +237,6 @@ class frame_principal(wx.Frame):
             self.actualizarLog(f'Vamos a deseleccionar los ficheros no encontrados: \n{listaEliminar}')
             self.deseleccionarFicheros(listaEliminar)
 
-        self.construirPaquete()
         return listaAdd
 
     def deseleccionarFicheros(self, lista):
@@ -222,35 +256,45 @@ class frame_principal(wx.Frame):
 
     def construirPaquete(self):
         rutaPruebas = '/users/cairo/instalaciones_prueba/'
+
+        # Almacenamos lo anterior...
+        comando = 'mv ' + rutaPruebas + 'OmegaCAIRO ' + rutaPruebas + 'OmegaCAIRO_' + funciones.obtenerfechaActual()
+        resultado = cmd.ejecutarComando('cairo_desaomega', comando)
+
+        if resultado.find('#') == -1:
+            return False
         # Vamos a crear la estructura necesaria para nuestros ficheros
-        '''
+
         lista = funciones.crearEstructuraDirect(self.clbLista.GetCheckedStrings())
+        if len(lista) > 0:
+            for ruta in lista:
+                comando = 'mkdir instalaciones_prueba' + ruta
+                resultado = cmd.ejecutarComando('cairo_desaomega', comando)
+                print(f'Resultado del comando <{comando}> es [{resultado}]')
 
-        for ruta in lista:
-            comando = 'mkdir instalaciones_prueba' + ruta
-            resultado = cmd.ejecutarComando('cairo_desaomega', comando)
-            print(f'Resultado del comando <{comando}> es [{resultado}]')
+            # copiamos los ficheros en su lugar
+            for dato in self.clbLista.GetCheckedStrings():
+                datos_fichero = dato.split(' | ')
+                fichero = datos_fichero[1]
 
+                cmd.ejecutarComando('cairo_desaomega', 'cp ' + fichero + " " + rutaPruebas + fichero )
 
-        for dato in self.clbLista.GetCheckedStrings():
-            datos_fichero = dato.split(' | ')
-            fichero = datos_fichero[1]
-        
-            cmd.ejecutarComando('cairo_desaomega', 'cp ' + fichero + " " + rutaPruebas + fichero )
-        '''
-        # ya tenemos los ficheros dentro de su estructura
-        # vamos a hacer el paquete:
-        # generaremos el nombre del parche con el formato:
-        # Parche_cairo_<cod_implantacion>_V<YYYYmmdd>.tar.gz
-        nombreParche = 'Parche_cairo_' + self.tbcodImplantacion.GetValue() + '_V' + funciones.obtenerfechaActual()
-        self.actualizarLog(f'Generamos el Parche <{nombreParche}>')
+            # ya tenemos los ficheros dentro de su estructura
+            # vamos a hacer el paquete:
+            # generaremos el nombre del parche con el formato:
+            # Parche_cairo_<cod_implantacion>_V<YYYYmmdd>.tar.gz
+            nombreParche = 'Parche_cairo_' + self.tbcodImplantacion.GetValue() + '_V' + funciones.obtenerfechaActual()
+            self.actualizarLog(f'Generamos el Parche <{nombreParche}>')
 
+            resultado = cmd.ejecutarScript('cairo_desaomega', ['echo \'Inicio script\'', 'cd instalaciones_prueba', 'tar -cvf ' + nombreParche + '.tar ./OmegaCAIRO', 'echo \'Fin script\''])
+            if resultado.find('Fin script') == -1:
+                return False
+            resultado = cmd.ejecutarScript('cairo_desaomega',
+                                          ['cd instalaciones_prueba', 'gzip ' + nombreParche + '.tar'])
+            if resultado.find('Fin script') == -1:
+                return False
 
-        comando = cmd.ejecutarScript('cairo_desaomega', ['cd instalaciones_prueba', 'tar -cvf ' + nombreParche + '.tar ./OmegaCAIRO'])
-        comando = cmd.ejecutarScript('cairo_desaomega',
-                                      ['cd instalaciones_prueba', 'gzip ' + nombreParche + '.tar'])
-
-
+        return True
 
 
 
