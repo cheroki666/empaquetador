@@ -116,7 +116,7 @@ class frame_principal(wx.Frame):
         # Creamos un TextCtrl para escribir lo que vamos haciendo
         self.tclog = wx.TextCtrl(self, -1, style=wx.TE_MULTILINE)
         self.tclog.SetBackgroundColour(wx.Colour(253, 245, 226, 1))
-        vsizer.Add(self.tclog, 1, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 5)
+        vsizer.Add(self.tclog, 2, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 5)
         # Creamos un boton para Validar los ficheros.
         self.btValidar = wx.Button(self, -1, 'Validar')
         self.btValidar.Bind(wx.EVT_BUTTON, self.OnClickComienzo)
@@ -126,7 +126,8 @@ class frame_principal(wx.Frame):
         # hsizerValidar.Fit(self)
 
         # Creamos un boton para generar el log y resto de documentos...
-        self.btGuardar = wx.Button(self, -1, 'Guardar...')
+        self.btGuardar = wx.BitmapButton(self, bitmap=wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN), size=(32, 32))
+        # self.btGuardar = wx.Button(self, -1, 'Guardar...')
         self.btGuardar.Bind(wx.EVT_BUTTON, self.OnClickGuardar)
         self.btGuardar.Enable(False)
         hsizerGuardar = wx.BoxSizer(wx.HORIZONTAL)
@@ -200,14 +201,9 @@ class frame_principal(wx.Frame):
 
 
     def actualizarLog(self, texto):
-        # textoFinal = self.tclog.GetValue() + texto + '\n'
-        thread = Thread(target = self.actualiza, args = (texto, ))
-        thread.start()
-
-
-    def actualiza(self, texto):
         self.tclog.AppendText(texto + '\n')
         self.tclog.Refresh()
+
 
     def ejecutarCVSstatus(self, listaFicheros):
         listaAdd = []

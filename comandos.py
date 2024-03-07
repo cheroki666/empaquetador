@@ -142,7 +142,7 @@ def ejecutarScript(maquina, script):
 
 
 if __name__ == '__main__' :
-    resultado = ejecutarComando('cairo_desaomega', 'cvs -d :pserver:cairo:omega123@172.20.32.29:2412/REPOSITORIO/CAIRO diff OmegaCAIRO/cfg/GesOPV2/reglas/ASTRO_SOC_BAM_TRAFFICA/patCeseAlarma.cfg')
+    resultado = ejecutarComando('cairo_desaomega', 'cvs -d :pserver:cairo:omega123@172.20.32.29:2412/REPOSITORIO/CAIRO diff OmegaCAIRO/bin/GesOPV2/FunEntAstro/FunEnt_OPV_ASTRO_DSLAMIP_TICKET_CREADO_ABA')
     print(f'El resultado del comando es: [{resultado}]')
     if resultado.find('I know nothing about') != -1:
         print('Ese fichero no está en CVS. Tenemos que hacer un cvs add ... ')
