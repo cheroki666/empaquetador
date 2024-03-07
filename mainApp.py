@@ -9,8 +9,31 @@ import appEmpaquetador_1 as funciones
 
 from threading import Thread
 
+class frame_elegirRuta(wx.Frame):
+    def __init__(self, parent):
+        # Este es el constructor. Darse cuenta que se pasa como
+        # parámetro parent, esto es, la referencia del frame que instancia
+        # a esta clase. La guardamos.
+        self.padre = parent
+        # Llamamos al constructor de la clase de la que hereda.
+        # wx.Frame.__init__(self, None, -1, title="Selecciona ruta...")
 
-# Creamos una clase frame que pide un dato.
+        self.dlg = wx.DirDialog(self.padre, "Selecciona ruta...", "D:/T138708/",
+                           wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
+
+        if self.dlg.ShowModal() == wx.ID_OK:
+            self.padre.DirName = self.dlg.GetPath()
+        else:
+            self.padre.DirName = None
+        self.dlg.Destroy()
+        self.padre.actualizarLog(f'Carpeta seleccionada: [{self.padre.DirName}]')
+        print(f'Carpeta seleccionada: [{self.padre.DirName}]')
+        #vsizer = wx.BoxSizer(wx.VERTICAL)
+        #vsizer.Add(self.dlg, 0, wx.ALL, 5)
+
+
+
+# Creamos una clase frame que muestra un calendario para seleccionar una fecha
 class frame_fechaInicio(wx.Frame):
     def __init__(self, parent):
         # Este es el constructor. Darse cuenta que se pasa como
@@ -59,11 +82,15 @@ class frame_fechaInicio(wx.Frame):
     def cambioFecha(self, event):
         self.tbFechaInicio.SetValue((self.ccalendar.GetDate()).Format(format='%d/%m/%Y'))
 
+
+
 # Creamos la clase de la ventana principal.
 class frame_principal(wx.Frame):
     def __init__(self):
+        self.DirName = None
         # Constructor. Llamamos al constructor de la clase wx.Frame.
         frame = wx.Frame.__init__(self, None, -1, title='OPV_Empaquetador')
+        wx.Frame.SetIcon(self, wx.ArtProvider.GetIcon(wx.ART_HELP_BOOK, wx.ART_FRAME_ICON))
         # Establecemos el tamaño min. y max. de la ventana
         wx.Frame.SetSizeHints(self, (600,400),(1024,768))
         # Creamos los sizers.
@@ -118,7 +145,7 @@ class frame_principal(wx.Frame):
         self.tclog.SetBackgroundColour(wx.Colour(253, 245, 226, 1))
         vsizer.Add(self.tclog, 2, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, 5)
         # Creamos un boton para Validar los ficheros.
-        self.btValidar = wx.Button(self, -1, 'Validar')
+        self.btValidar = wx.Button(self, -1, 'Comenzar')
         self.btValidar.Bind(wx.EVT_BUTTON, self.OnClickComienzo)
         self.btValidar.Enable(False)
         hsizerValidar = wx.BoxSizer(wx.HORIZONTAL)
@@ -126,10 +153,10 @@ class frame_principal(wx.Frame):
         # hsizerValidar.Fit(self)
 
         # Creamos un boton para generar el log y resto de documentos...
-        self.btGuardar = wx.BitmapButton(self, bitmap=wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN), size=(32, 32))
+        self.btGuardar = wx.BitmapButton(self, bitmap=wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN), size=(32, 32), name='Seleccionar ruta...')
         # self.btGuardar = wx.Button(self, -1, 'Guardar...')
         self.btGuardar.Bind(wx.EVT_BUTTON, self.OnClickGuardar)
-        self.btGuardar.Enable(False)
+        # self.btGuardar.Enable(False)
         hsizerGuardar = wx.BoxSizer(wx.HORIZONTAL)
         hsizerGuardar.Add(self.btGuardar, 0, wx.CENTER, 5)
         hsizerGuardar.Fit(self)
@@ -181,23 +208,28 @@ class frame_principal(wx.Frame):
 
     def OnClickComienzo(self, event):
         # Habrá que conectarse a la máquina y ejecutar comandos
+        if self.DirName == None:
+            self.actualizarLog('No has seleccionado la ruta para almacenar logs / documento de instalacion.')
+        else:
+            listaFicheros = self.clbLista.GetCheckedStrings()
+            lFicheros = []
+            for dato in listaFicheros:
+                valores = dato.split(' | ')
+                lFicheros.append(valores[1])
+            # 1 - Comprobaremos el estado de los ficheros en CVS
+            self.ejecutarCVSstatus(lFicheros)
+            listaresultados = self.clbLista.GetCheckedItems()
+            if len(listaresultados) > 0:
 
-        listaFicheros = self.clbLista.GetCheckedStrings()
-        lFicheros = []
-        for dato in listaFicheros:
-            valores = dato.split(' | ')
-            lFicheros.append(valores[1])
-        # 1 - Comprobaremos el estado de los ficheros en CVS
-        listaresultados = self.ejecutarCVSstatus(lFicheros)
-        if len(listaresultados) > 0:
-
-            self.construirPaquete()
-            # si hemos generado correctamente el paquete, habilitamos el boton Guardar
-            self.btGuardar.Enable(True)
-
+                self.construirPaquete()
+                # si hemos generado correctamente el paquete, habilitamos el boton Guardar
+                self.btGuardar.Enable(True)
+            else:
+                self.actualizarLog('No hay ficheros seleccionados !!!')
 
     def OnClickGuardar(self, event):
-       pass
+        self.dlg = frame_elegirRuta(self)
+
 
 
     def actualizarLog(self, texto):
@@ -224,6 +256,7 @@ class frame_principal(wx.Frame):
                 print(f'Fichero: [{fichero}] NO existe en la ruta. Debemos eliminarlo ...')
                 self.actualizarLog(f'Fichero: [{datos[1]}] NO existe en la ruta. Debemos eliminarlo ...')
                 listaEliminar.append(fichero)
+                # TODO: debemos eliminar estos ficheros de la lista?
             else:
                 print(f'Fichero: [{fichero}] YA está en CVS. Tenemos que hacer un cvs commit ...')
                 self.actualizarLog(f'Fichero: [{datos[1]}] YA está en CVS. Tenemos que hacer un cvs commit ...')

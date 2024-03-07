@@ -17,8 +17,8 @@ def obtenerFichero(fichero, serverId):
 
     resultado = False
     # Definimos la ruta donde queremos poner el fichero
-    # local_file_path = 'D:/T138708/' + fichero
-    local_file_path = 'C:/Users/ajgar/' + fichero
+    local_file_path = 'D:/T138708/' + fichero
+    # local_file_path = 'C:/Users/ajgar/' + fichero
     # Definimos la ruta y fichero que queremos traer a local
     remote_file_path = '/users/cairo/instalaciones/' + fichero
     print(f'Vamos a descargar el fichero <{fichero}>')
@@ -107,8 +107,8 @@ def obtenerListaFicheros(fechaInicio):
     serverId = 'cairo_desaomega'
     ficheroOrigen = 'listaSubidasProduccionRealizadas.csv'
     # fechaInicio = '04/12/2023'  # fecha en formato DD/MM/YYYY
-    # rutaDestino = 'D:/T138708/'
-    rutaDestino = 'C:/Users/ajgar/'
+    rutaDestino = 'D:/T138708/'
+    # rutaDestino = 'C:/Users/ajgar/'
 
     if (obtenerFichero(ficheroOrigen, serverId)):
         print('Descarga con Éxito!!!')
